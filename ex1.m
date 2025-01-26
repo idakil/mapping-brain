@@ -81,6 +81,16 @@ xticklabels(categories)
 %     title([categories(i)]);
 % end
 
+%% 
+[~, tM, ~] = fitData(8, bold, designMatrix);
+%% Plot T maps with no regressors
+figure;
+for i = 1:nCategories
+    subplot(2, 4, i);                 
+    imagesc(squeeze(tM(:,:,28,i)));
+    title(categories(i))
+end
+colorbar
 %% Extra regressors
 
 % constant terms columns of ones and zeros?
@@ -109,21 +119,38 @@ for i = 1:40
     imagesc(squeeze(betaMaps(:,:,i,3)), [-20, 20]);
 end
 
-%% Plot T maps
+%% 
+figure;
+title(categories(3))
+j = 1;
+for i = 20:39
+    subplot(4, 5, j);                 
+    imagesc(squeeze(tMaps(:,:,i,3)), [-10,10]);
+    title(i)
+    colorbar
+    j = j+1;
+end
+%% Plot T maps for all categories, slice 28
 figure;
 for i = 1:nCategories
     subplot(2, 4, i);                 
     imagesc(squeeze(tMaps(:,:,28,i)), [-10, 10]);
     title(categories(i))
 end
+colorbar
+
 %% Contrast
 cMap = zeros(size(bold));
+c1 = categoryIndex(categories, "house");
+c2 = categoryIndex(categories, "face");
 
 for x = 1:size(bold, 1)
     for y = 1:size(bold, 2)
         for z = 1:size(bold, 3)
             voxelTimeSeries = squeeze(double(bold(x, y, z, :))); 
-            c = [-1 1 zeros(1,18)];
+            c = zeros(1,20);
+            c(c1) = -1;
+            c(c2) = 1;
             cov = c*(voxelTimeSeries'*voxelTimeSeries)^-1*c';
             cMap(x,y,z)= c*squeeze(betaMaps(x,y,z,:))/sqrt(varMap(x,y,z)*cov);
         end
@@ -131,11 +158,14 @@ for x = 1:size(bold, 1)
 end
 %% Plot
 figure;
-for i = 1:64
-    subplot(6, 7, i);
-    imagesc(cMap(:,:,i), [0, 10000]);
-    colormap('gray');   
+j = 1;
+for i = 20:39
+    subplot(5, 4, j);
+    imagesc(cMap(:,:,i), [-10,10]);
+    %colormap('gray');   
     title(i)
+    j = j+1;
+    colorbar
 end
 
 %% ROI
